@@ -1,0 +1,39 @@
+from flask import Flask, jsonify, request
+from functools import wraps
+
+app = Flask(Thailand data protection)
+
+# Mock data for PDPA compliance
+pdpa_policies = {
+    "data_collection": "We collect only necessary personal data with consent.",
+    "data_protection": "Your data is securely stored and protected.",
+    "data_rights": "You have the right to access, update, and delete your data."
+}
+
+# Authentication for blocking Meta company
+def authenticate(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        api_key = request.headers.get("API-Key")
+        if api_key != "BLOCK_META":
+            return jsonify({"error": "Unauthorized access"}), 403
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/')
+def home():
+    return jsonify({"message": "Welcome to Thailand Data Protection API (PDPA)"})
+
+@app.route('/policy', methods=['GET'])
+@authenticate
+def get_policies():
+    return jsonify(pdpa_policies)
+
+@app.route('/policy/<policy_name>', methods=['GET'])
+@authenticate
+def get_policy(policy_name):
+    policy = pdpa_policies.get(policy_name, "Policy not found")
+    return jsonify({policy_name: policy})
+
+if __name__ == '__main__':
+    app.run(debug=True)
